@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>出欠一覧</title>
+</head>
+<body>
+
+<h2>出欠一覧</h2>
+
+<button onclick="location.href='menu.html'">メニューへ戻る</button>
+
+<p id="msg">読み込み準備中...</p>
+
+<table border="1" cellpadding="6">
+  <thead>
+    <tr>
+      <th>氏名</th>
+      <th>出欠</th>
+      <th>コメント</th>
+      <th>日時</th>
+    </tr>
+  </thead>
+  <tbody id="list"></tbody>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDradhbemdJWhKRzJDpD0k5g_xSX-C3ccE",
+  authDomain: "igo-renrakumou.firebaseapp.com",
+  projectId: "igo-renrakumou",
+  storageBucket: "igo-renrakumou.firebasestorage.app",
+  messagingSenderId: "21430951468",
+  appId: "1:21430951468:web:7513e4528ac1592f41fb89"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const auth = firebase.auth();
+
+auth.onAuthStateChanged((user) => {
+  if (!user) {
+    location.href = "login.html";
+  }
+});
+
+const nameMap = {
+  "teacher@igo.com": "新城先生",
+  "teacher001@igo.com": "薮内先生",
+  "teacher002@igo.com": "古家先生",
+  "student001@igo.com": "信貴一花",
+  "student002@igo.com": "髙塚菜緒",
+  "student003@igo.com": "中野礼寧",
+  "student004@igo.com": "張静儀",
+  "student005@igo.com": "嘉納崇文",
+  "student006@igo.com": "中村美香子",
+  "student007@igo.com": "村田道",
+  "student008@igo.com": "荒木一輝",
+  "student009@igo.com": "小畑直哉",
+  "student010@igo.com": "尾濱來輝",
+  "student011@igo.com": "岡井綾音",
+  "student012@igo.com": "福録穣"
+};
+
+async function loadAttendance() {
+  const msg = document.getElementById("msg");
+  const list = document.getElementById("list");
+
+  try {
+    msg.innerText = "Firestoreから読み込み中...";
+
+    const snapshot = await db
+  	.collection("attendance")
+  	.orderBy("time", "desc")
+ 	.get();
+
+    list.innerHTML = "";
+
+    if (snapshot.empty) {
+      msg.innerText = "出欠データがありません。";
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+
+      const name = nameMap[data.email] || data.email || "名前未登録";
+
+      let dateText = "";
+      if (data.time && data.time.toDate) {
+        dateText = data.time.toDate().toLocaleString("ja-JP");
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td>${data.status || ""}</td>
+        <td>${data.comment || ""}</td>
+        <td>${dateText}</td>
+      `;
+      list.appendChild(tr);
+    });
+
+    msg.innerText = "読み込み完了";
+  } catch (error) {
+    msg.innerText = "読み込みエラー：" + error.message;
+  }
+}
+
+loadAttendance();
+</script>
+
+</body>
+</html>

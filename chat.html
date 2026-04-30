@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>チャット</title>
+</head>
+
+<body>
+
+<h2>チャット</h2>
+
+<button onclick="location.href='menu.html'">メニューへ戻る</button>
+
+<hr>
+
+<div id="chatList"></div>
+
+<hr>
+
+<textarea id="message" rows="3" cols="40" placeholder="メッセージを入力"></textarea><br><br>
+<button onclick="sendMessage()">送信</button>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDradhbemdJWhKRzJDpD0k5g_xSX-C3ccE",
+  authDomain: "igo-renrakumou.firebaseapp.com",
+  projectId: "igo-renrakumou",
+  storageBucket: "igo-renrakumou.firebasestorage.app",
+  messagingSenderId: "21430951468",
+  appId: "1:21430951468:web:7513e4528ac1592f41fb89"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const nameMap = {
+  "teacher@igo.com": "新城先生",
+  "teacher001@igo.com": "薮内先生",
+  "teacher002@igo.com": "古家先生",
+  "student001@igo.com": "信貴一花",
+  "student002@igo.com": "髙塚菜緒",
+  "student003@igo.com": "中野礼寧",
+  "student004@igo.com": "張静儀",
+  "student005@igo.com": "嘉納崇文",
+  "student006@igo.com": "中村美香子",
+  "student007@igo.com": "村田道",
+  "student008@igo.com": "荒木一輝",
+  "student009@igo.com": "小畑直哉",
+  "student010@igo.com": "尾濱來輝",
+  "student011@igo.com": "岡井綾音",
+  "student012@igo.com": "福録穣"
+};
+
+let currentUser = null;
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    loadChat();
+  } else {
+    location.href = "login.html";
+  }
+});
+
+async function sendMessage() {
+  const text = document.getElementById("message").value.trim();
+
+  if (text === "") {
+    alert("メッセージを入力してください");
+    return;
+  }
+
+  await db.collection("chat").add({
+    email: currentUser.email,
+    name: nameMap[currentUser.email] || currentUser.email,
+    message: text,
+    time: new Date()
+  });
+
+  document.getElementById("message").value = "";
+}
+
+function loadChat() {
+  db.collection("chat")
+    .orderBy("time", "desc")
+    .onSnapshot((snapshot) => {
+      const chatList = document.getElementById("chatList");
+      chatList.innerHTML = "";
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        let dateText = "";
+        if (data.time && data.time.toDate) {
+          dateText = data.time.toDate().toLocaleString("ja-JP");
+        }
+
+        const div = document.createElement("div");
+	const isMe = data.email === currentUser.email;
+	const isTeacher = data.email && data.email.includes("teacher");
+
+	div.style.borderBottom = "1px solid #ccc";
+	div.style.padding = "8px";
+	div.style.margin = "6px 0";
+	div.style.borderRadius = "8px";
+
+	if (isMe) {
+	  div.style.backgroundColor = "#e0ffe0";
+	} else if (isTeacher) {
+	  div.style.backgroundColor = "#fff0e0";
+	  div.style.border = "2px solid #ff9900";
+	} else {
+	  div.style.backgroundColor = "#f5f5f5";
+	}
+        div.innerHTML = `
+          <strong>${data.name || ""}</strong><br>
+          ${data.message || ""}<br>
+          <small>${dateText}</small>
+        `;
+
+        chatList.appendChild(div);
+      });
+    });
+}
+</script>
+
+</body>
+</html>

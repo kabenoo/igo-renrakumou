@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ネット囲碁教室ログイン</title>
+</head>
+
+<body>
+
+<h2>ログイン</h2>
+
+<input type="email" id="email" placeholder="メールアドレス"><br><br>
+<input type="password" id="password" placeholder="パスワード"><br><br>
+
+<button onclick="login()">ログイン</button>
+
+<p id="msg"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// あなたのFirebase設定（そのまま使用）
+const firebaseConfig = {
+  apiKey: "AIzaSyDradhbemdJWhKRzJDpD0k5g_xSX-C3ccE",
+  authDomain: "igo-renrakumou.firebaseapp.com",
+  projectId: "igo-renrakumou",
+  storageBucket: "igo-renrakumou.firebasestorage.app",
+  messagingSenderId: "21430951468",
+  appId: "1:21430951468:web:7513e4528ac1592f41fb89"
+};
+
+// 初期化
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// ログイン処理
+window.login = function() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+   .then(() => {
+    window.location.href = "menu.html";
+  })
+    .catch((error) => {
+      document.getElementById("msg").innerText = "ログイン失敗：" + error.message;
+    });
+}
+</script>
+
+</body>
+</html>

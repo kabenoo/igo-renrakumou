@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>出欠連絡</title>
+</head>
+
+<body>
+
+<h2>出欠連絡</h2>
+
+<select id="status">
+  <option value="出席">出席</option>
+  <option value="欠席">欠席</option>
+  <option value="遅刻">遅刻</option>
+</select><br><br>
+
+<input type="text" id="comment" placeholder="コメント（任意）"><br><br>
+
+<button onclick="send()">送信</button>
+<button onclick="location.href='menu.html'">メニューへ戻る</button>
+
+<p id="msg"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDradhbemdJWhKRzJDpD0k5g_xSX-C3ccE",
+  authDomain: "igo-renrakumou.firebaseapp.com",
+  projectId: "igo-renrakumou",
+  storageBucket: "igo-renrakumou.firebasestorage.app",
+  messagingSenderId: "21430951468",
+  appId: "1:21430951468:web:7513e4528ac1592f41fb89"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+  } else {
+    location.href = "login.html";
+  }
+});
+
+window.send = async function() {
+  if (!currentUser) {
+    document.getElementById("msg").innerText = "ログイン情報が確認できません。";
+    return;
+  }
+
+  const status = document.getElementById("status").value;
+  const comment = document.getElementById("comment").value;
+
+  await addDoc(collection(db, "attendance"), {
+    email: currentUser.email,
+    status: status,
+    comment: comment,
+    time: new Date()
+  });
+
+  document.getElementById("msg").innerText = "送信しました！";
+}
+</script>
+
+</body>
+</html>
