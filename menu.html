@@ -38,7 +38,7 @@ auth.onAuthStateChanged((user) => {
 
 function logout() {
   auth.signOut().then(() => {
-    location.href = "login.html";
+    location.href = "./";
   }).catch((error) => {
     alert("ログアウト失敗：" + error.message);
   });
