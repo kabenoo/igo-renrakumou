@@ -32,7 +32,7 @@ const auth = firebase.auth();
 
 auth.onAuthStateChanged((user) => {
   if (!user) {
-    location.href = "login.html";
+    location.href = "index.html";
   }
 });
 
